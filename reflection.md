@@ -14,9 +14,9 @@ Document at least 3 bugs you found. Add rows as needed.
 
 | Input | Expected Behavior | Actual Behavior | Console Output / Error |
 |-------|-------------------|-----------------|------------------------|
-| | | | |
-| | | | |
-| | | | |
+| guess of 1 | go higher| go lower | actual result is 6 but it let us go lower when i guess 1 |
+| new game | click the new game it will start| click new game it stuck | cannot start the new game |
+| any guess |should show exact the hint| if it truelly lower it show go lower if it is higher it show higher |the hint is littile bit wierd |
 
 ---
 
