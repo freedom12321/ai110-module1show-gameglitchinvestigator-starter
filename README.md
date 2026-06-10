@@ -39,13 +39,13 @@ fix all of its logic with the help of AI
 
 Describe your fixed game in numbered steps so a reader can follow along without watching a video:
 
-1. <!-- 1. User enters a guess of 43 -->
-2. <!-- 2. Game returns Go LOWER! -->
-3. <!-- 3. User enters a guess of 30 → "Go LOWER!" -->
-4. <!-- Score updates correctly after each guess -->
-5. <!-- Game ends after the end of the attempt -->
+1. User enters a guess of 43
+2. Game returns Go LOWER!
+3. User enters a guess of 30 → "Go LOWER!"
+4. Score updates correctly after each guess
+5. Game ends after the end of the attempt
 
-**Screenshot** *(optional)*: <!-- Insert a screenshot of your fixed, winning game here -->
+**Screenshot** *(optional)*:
 
 ## 🧪 Test Results
 
