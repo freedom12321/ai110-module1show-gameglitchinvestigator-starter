@@ -26,27 +26,47 @@ It wrote the code, ran away, and now the game is unplayable.
 ## 📝 Document Your Experience
 
 - [ ] Describe the game's purpose.
+guess the number and then with different attempt in different difficulty game and then each attempt will give you hint whether need to go higher or lower, and if you win you will see you win with some balloon show up and earn some score. You will lose if end of attempt.
 - [ ] Detail which bugs you found.
+1. the comparison of the number vs true number is not correct. seems that the number actually is higher than ture. it let me go higher which is not make sense
+2. new game button not work
+3. when you unclick the hint there is nothings to show when you guess a number, nothhing correct nothing incorrect. you only know when you end of attempt. 
+4. when guess is even like 4, and then it will transform the true number to string "23", which will have a 4>"23", and let us go higher. this is wrong
 - [ ] Explain what fixes you applied.
+fix all of its logic with the help of AI
 
 ## 📸 Demo Walkthrough
 
 Describe your fixed game in numbered steps so a reader can follow along without watching a video:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+1. <!-- 1. User enters a guess of 43 -->
+2. <!-- 2. Game returns Go LOWER! -->
+3. <!-- 3. User enters a guess of 30 → "Go LOWER!" -->
+4. <!-- Score updates correctly after each guess -->
+5. <!-- Game ends after the end of the attempt -->
 
 **Screenshot** *(optional)*: <!-- Insert a screenshot of your fixed, winning game here -->
 
 ## 🧪 Test Results
 
 ```
-# Paste your pytest output here, e.g.:
-# pytest tests/
-# ========================= X passed in 0.XXs =========================
+platform darwin -- Python 3.13.1, pytest-9.0.3, pluggy-1.6.0 -- /Users/lihanxia/Documents/GitHub/ai110-module1show-gameglitchinvestigator-starter/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/lihanxia/Documents/GitHub/ai110-module1show-gameglitchinvestigator-starter
+plugins: anyio-4.13.0
+collected 10 items                                                                                                                                              
+
+tests/test_game_logic.py::test_winning_guess PASSED                                                                                                       [ 10%]
+tests/test_game_logic.py::test_guess_too_high PASSED                                                                                                      [ 20%]
+tests/test_game_logic.py::test_guess_too_low PASSED                                                                                                       [ 30%]
+tests/test_game_logic.py::test_high_guess_should_say_go_lower PASSED                                                                                      [ 40%]
+tests/test_game_logic.py::test_low_guess_should_say_go_higher PASSED                                                                                      [ 50%]
+tests/test_game_logic.py::test_hint_direction_multiple_scenarios PASSED                                                                                   [ 60%]
+tests/test_game_logic.py::test_single_digit_vs_double_digit_secret PASSED                                                                                 [ 70%]
+tests/test_game_logic.py::test_winning_score_is_positive PASSED                                                                                           [ 80%]
+tests/test_game_logic.py::test_win_bonus_decreases_with_attempts PASSED                                                                                   [ 90%]
+tests/test_game_logic.py::test_wrong_guesses_dont_decrease_score PASSED                                                                                   [100%]
+
 ```
 
 ## 🚀 Stretch Features
