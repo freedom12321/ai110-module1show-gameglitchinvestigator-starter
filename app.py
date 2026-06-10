@@ -2,6 +2,30 @@ import random
 import streamlit as st
 from logic_utils import check_guess, get_range_for_difficulty, parse_guess, update_score
 
+
+def get_hot_cold_indicator(guess: int, secret: int, range_size: int) -> tuple[str, str]:
+    """
+    Get a hot/cold indicator based on how close the guess is to the secret.
+
+    Returns: (emoji, description)
+    """
+    distance = abs(guess - secret)
+    percentage = distance / range_size
+
+    if percentage <= 0.05:  # Within 5% of range
+        return "🔥", "BURNING HOT!"
+    elif percentage <= 0.10:  # Within 10%
+        return "🌡️", "Very Hot"
+    elif percentage <= 0.20:  # Within 20%
+        return "♨️", "Hot"
+    elif percentage <= 0.30:  # Within 30%
+        return "🟡", "Warm"
+    elif percentage <= 0.50:  # Within 50%
+        return "🔵", "Cool"
+    else:  # More than 50% away
+        return "❄️", "Ice Cold"
+
+
 st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
 
 st.title("🎮 Game Glitch Investigator")
@@ -42,12 +66,24 @@ if "status" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state.history = []
 
+if "history_details" not in st.session_state:
+    st.session_state.history_details = []
+
 st.subheader("Make a guess")
 
-st.info(
-    f"Guess a number between 1 and 100. "
-    f"Attempts left: {attempt_limit - st.session_state.attempts}"
-)
+# Visual progress bar for attempts
+attempts_used = st.session_state.attempts - 1
+attempts_remaining = attempt_limit - attempts_used
+progress_value = attempts_used / attempt_limit
+st.progress(progress_value, text=f"Attempts: {attempts_used}/{attempt_limit}")
+
+# Color-coded info based on attempts remaining
+if attempts_remaining > 4:
+    st.info(f"🎯 Guess a number between {low} and {high}. You have {attempts_remaining} attempts left!")
+elif attempts_remaining > 2:
+    st.warning(f"⚠️ Guess a number between {low} and {high}. Only {attempts_remaining} attempts remaining!")
+else:
+    st.error(f"🚨 URGENT: Only {attempts_remaining} attempts left! Guess between {low} and {high}!")
 
 with st.expander("Developer Debug Info"):
     st.write("Secret:", st.session_state.secret)
@@ -74,6 +110,8 @@ if new_game:
     st.session_state.secret = random.randint(low, high)
     st.session_state.status = "playing"
     st.session_state.history = []
+    st.session_state.history_details = []
+    st.session_state.score = 0
     st.success("New game started.")
     st.rerun()
 
@@ -97,16 +135,33 @@ if submit:
 
         outcome, message = check_guess(guess_int, st.session_state.secret)
 
+        # Get hot/cold indicator
+        range_size = high - low
+        emoji, temp = get_hot_cold_indicator(guess_int, st.session_state.secret, range_size)
+
+        # Store detailed history for table
+        st.session_state.history_details.append({
+            "Attempt": st.session_state.attempts - 1,
+            "Guess": guess_int,
+            "Result": outcome,
+            "Temperature": f"{emoji} {temp}",
+            "Hint": message if show_hint else "Hidden"
+        })
+
         if outcome == "Too High":
             if show_hint:
-                st.warning(message)
+                st.error(f"### 📉 {message}")
+                st.info(f"{emoji} Temperature: **{temp}**")
             else:
-                st.warning("Wrong guess!")
+                st.warning(f"❌ Wrong guess!")
+                st.info(f"{emoji} Temperature: **{temp}**")
         elif outcome == "Too Low":
             if show_hint:
-                st.warning(message)
+                st.error(f"### 📈 {message}")
+                st.info(f"{emoji} Temperature: **{temp}**")
             else:
-                st.warning("Wrong guess!")
+                st.warning(f"❌ Wrong guess!")
+                st.info(f"{emoji} Temperature: **{temp}**")
 
         st.session_state.score = update_score(
             current_score=st.session_state.score,
@@ -118,17 +173,40 @@ if submit:
             st.balloons()
             st.session_state.status = "won"
             st.success(
-                f"You won! The secret was {st.session_state.secret}. "
+                f"🎉 You won! The secret was {st.session_state.secret}. "
                 f"Final score: {st.session_state.score}"
             )
         else:
             if st.session_state.attempts >= attempt_limit:
                 st.session_state.status = "lost"
                 st.error(
-                    f"Out of attempts! "
+                    f"💀 Out of attempts! "
                     f"The secret was {st.session_state.secret}. "
                     f"Score: {st.session_state.score}"
                 )
+
+# Display game summary table if there's any history
+if len(st.session_state.history_details) > 0:
+    st.divider()
+    st.subheader("📊 Game Summary")
+
+    # Create metrics row
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total Guesses", len(st.session_state.history_details))
+    with col2:
+        st.metric("Current Score", st.session_state.score)
+    with col3:
+        status_emoji = "🏆" if st.session_state.status == "won" else "🎮" if st.session_state.status == "playing" else "💔"
+        status_text = "Won!" if st.session_state.status == "won" else "Playing" if st.session_state.status == "playing" else "Lost"
+        st.metric("Status", f"{status_emoji} {status_text}")
+
+    # Display history table
+    st.dataframe(
+        st.session_state.history_details,
+        use_container_width=True,
+        hide_index=True
+    )
 
 st.divider()
 st.caption("Built by an AI that claims this code is production-ready.")

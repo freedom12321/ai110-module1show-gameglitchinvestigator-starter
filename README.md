@@ -69,6 +69,151 @@ tests/test_game_logic.py::test_wrong_guesses_dont_decrease_score PASSED         
 
 ```
 
-## 🚀 Stretch Features
+## 🚀 Stretch Features: Enhanced UI
 
-- [ ] [If you choose to complete Challenge 4, describe the Enhanced UI changes here — a screenshot is optional]
+### UI Enhancements Overview
+The game now includes a rich, user-friendly interface with visual feedback, progress tracking, and a comprehensive game summary. All enhancements were made in `app.py` without modifying core game logic in `logic_utils.py`.
+
+### 1. Visual Progress Bar
+**Location:** `app.py` lines 47-51
+
+**What it does:**
+- Displays a visual progress bar showing attempts used vs. total attempts allowed
+- Updates dynamically as the player makes guesses
+- Example output: `[▓▓▓░░░░░] Attempts: 3/8`
+
+**Code:**
+```python
+attempts_used = st.session_state.attempts - 1
+attempts_remaining = attempt_limit - attempts_used
+progress_value = attempts_used / attempt_limit
+st.progress(progress_value, text=f"Attempts: {attempts_used}/{attempt_limit}")
+```
+
+### 2. Color-Coded Status Messages
+**Location:** `app.py` lines 54-59
+
+**What it does:**
+- Changes message color and urgency based on remaining attempts
+- Green info box (🎯): More than 4 attempts left
+- Yellow warning box (⚠️): 2-4 attempts remaining
+- Red error box (🚨): Less than 2 attempts - URGENT!
+
+**Output examples:**
+- `🎯 Guess a number between 1 and 100. You have 8 attempts left!`
+- `⚠️ Only 3 attempts remaining!`
+- `🚨 URGENT: Only 1 attempts left!`
+
+### 3. Hot/Cold Temperature System
+**Location:** `app.py` lines 6-26 (function) and 133-150 (usage)
+
+**What it does:**
+- New `get_hot_cold_indicator()` function calculates proximity to secret number
+- Returns emoji and temperature description based on distance percentage
+- Provides additional feedback beyond just "higher" or "lower"
+
+**Temperature Scale:**
+| Distance | Emoji | Description |
+|----------|-------|-------------|
+| Within 5% of range | 🔥 | BURNING HOT! |
+| Within 10% | 🌡️ | Very Hot |
+| Within 20% | ♨️ | Hot |
+| Within 30% | 🟡 | Warm |
+| Within 50% | 🔵 | Cool |
+| More than 50% | ❄️ | Ice Cold |
+
+**Code:**
+```python
+def get_hot_cold_indicator(guess: int, secret: int, range_size: int) -> tuple[str, str]:
+    distance = abs(guess - secret)
+    percentage = distance / range_size
+    # Returns emoji and temperature description
+```
+
+**Output example:**
+```
+📉 Go LOWER!
+🔥 Temperature: BURNING HOT!
+```
+
+### 4. Enhanced Feedback Messages
+**Location:** `app.py` lines 151-164
+
+**What it does:**
+- Displays larger, more prominent feedback with markdown headers
+- Shows both directional hints (if enabled) and temperature simultaneously
+- Uses color-coded Streamlit containers (error for wrong, success for correct)
+
+**Output format:**
+- Wrong guess with hints: Shows "📉 Go LOWER!" or "📈 Go HIGHER!" in red error box, plus temperature in blue info box
+- Wrong guess without hints: Shows "❌ Wrong guess!" in yellow warning box, plus temperature
+- Correct guess: Shows "🎉 Correct!" with balloons animation
+
+### 5. Game Summary Table & Metrics Dashboard
+**Location:** `app.py` lines 69-70 (state initialization), 143-149 (data collection), 189-209 (display)
+
+**What it does:**
+- Tracks detailed history of every guess in `st.session_state.history_details`
+- Displays comprehensive game statistics after first guess
+- Shows three key metrics: Total Guesses, Current Score, Game Status
+- Presents sortable, filterable data table with all guess information
+
+**Metrics Dashboard Output:**
+```
+📊 Game Summary
+┌─────────────────┬──────────────────┬────────────────────┐
+│ Total Guesses   │  Current Score   │      Status        │
+│       5         │       60         │  🏆 Won!          │
+└─────────────────┴──────────────────┴────────────────────┘
+```
+
+**History Table Columns:**
+- **Attempt**: Attempt number (1, 2, 3...)
+- **Guess**: The number the player guessed
+- **Result**: Outcome (Win, Too High, Too Low)
+- **Temperature**: Hot/cold indicator with emoji
+- **Hint**: The directional hint or "Hidden" if hints disabled
+
+**Example table:**
+| Attempt | Guess | Result    | Temperature      | Hint          |
+|---------|-------|-----------|------------------|---------------|
+| 1       | 50    | Too High  | ❄️ Ice Cold     | 📉 Go LOWER! |
+| 2       | 25    | Too Low   | 🟡 Warm         | 📈 Go HIGHER!|
+| 3       | 35    | Too High  | 🌡️ Very Hot    | 📉 Go LOWER! |
+| 4       | 32    | Win       | 🔥 BURNING HOT! | 🎉 Correct!  |
+
+**Code:**
+```python
+# Data collection on each guess
+st.session_state.history_details.append({
+    "Attempt": st.session_state.attempts - 1,
+    "Guess": guess_int,
+    "Result": outcome,
+    "Temperature": f"{emoji} {temp}",
+    "Hint": message if show_hint else "Hidden"
+})
+
+# Display with metrics and table
+st.dataframe(st.session_state.history_details, use_container_width=True, hide_index=True)
+```
+
+### 6. Improved Win/Loss Messages
+**Location:** `app.py` lines 172-186
+
+**What it does:**
+- Enhanced win message with emoji: `🎉 You won!`
+- Enhanced loss message with emoji: `💀 Out of attempts!`
+- Triggers celebratory balloons animation on win
+- Displays final secret number and score
+
+**Output examples:**
+- Win: `🎉 You won! The secret was 42. Final score: 90`
+- Loss: `💀 Out of attempts! The secret was 73. Score: 0`
+
+### Technical Implementation Notes
+- All UI enhancements are isolated in `app.py`
+- Core game logic remains untouched in `logic_utils.py`
+- Uses Streamlit's built-in components: `st.progress()`, `st.metric()`, `st.dataframe()`, `st.balloons()`
+- Session state management ensures data persists across Streamlit reruns
+- Temperature calculation is purely UI feedback and doesn't affect game mechanics
+- All tests continue to pass - no breaking changes to game logic
